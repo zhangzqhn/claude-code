@@ -5,11 +5,20 @@ This script is called by Claude Code after a tool executes.
 It reads .claude/hookify.*.local.md files and evaluates rules.
 """
 
-import os
-import sys
-import json
+# 【模块功能概述】
+# 本脚本是 hookify 插件的 PostToolUse（工具执行后）Hook 入口
+# 当 Claude Code 调用工具（如 Bash、Edit、Write 等）执行完毕后触发
+# 与 PreToolUse 的区别：
+#   - PreToolUse：工具执行前触发，可阻止工具调用
+#   - PostToolUse：工具执行后触发，可对执行结果进行后处理或给出提醒
+# 典型场景：在文件保存后检查敏感信息泄露、在 Bash 命令执行后给出安全提示
+
+import os   # 【语法】操作系统接口模块
+import sys  # 【语法】系统模块
+import json # 【语法】JSON 解析模块
 
 # CRITICAL: Add plugin root to Python path for imports
+# 【业务含义】将插件根目录添加到 Python 模块搜索路径（与 pretooluse.py 相同的路径配置逻辑）
 PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT')
 if PLUGIN_ROOT:
     parent_dir = os.path.dirname(PLUGIN_ROOT)
@@ -29,6 +38,8 @@ except ImportError as e:
 
 def main():
     """Main entry point for PostToolUse hook."""
+    # 【业务功能】PostToolUse Hook 的主入口，处理工具执行后的事件
+    # 执行流程与 PreToolUse 基本一致，只是触发时机不同
     try:
         # Read input from stdin
         input_data = json.load(sys.stdin)
@@ -59,6 +70,7 @@ def main():
 
     finally:
         # ALWAYS exit 0
+        # 【业务含义】始终 exit(0)，不因 Hook 错误阻断操作
         sys.exit(0)
 
 
